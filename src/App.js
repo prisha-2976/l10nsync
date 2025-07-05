@@ -1,48 +1,46 @@
 import React, { useState } from "react";
 import FileUpload from "./FileUpload.js";
 import CompareButton from "./CompareButton.js";
-import { styles } from "./styles.js";
 
 function App() {
   const [file1Content, setFile1Content] = useState("");
   const [file2Content, setFile2Content] = useState("");
 
   const handleCompare = () => {
-    const lines1 = file1Content.split("\n");
-    const lines2 = file2Content.split("\n");
+    if (!file1Content || !file2Content) {
+      alert("Please upload both files before comparing.");
+      return;
+    }
 
-    const missingInFile2 = lines1.filter((line) => !lines2.includes(line));
-    const missingInFile1 = lines2.filter((line) => !lines1.includes(line));
+    if (file1Content.trim() === file2Content.trim()) {
+      alert("Both files are same. No differences found.");
+      return;
+    }
+
+    const keys1 = file1Content.split("\n").map((line) => line.split(":")[0].trim());
+    const keys2 = file2Content.split("\n").map((line) => line.split(":")[0].trim());
+
+    const missingInFile2 = keys1.filter((key) => !keys2.includes(key));
+    const missingInFile1 = keys2.filter((key) => !keys1.includes(key));
 
     const resultHTML = `
       <html>
-        <head><title>Comparison Result</title></head>
+        <head><title>Comparing....</title></head>
         <body style="font-family:sans-serif; padding:20px;">
-          <h1>Comparison Result</h1>
+          <h1>Comparing....</h1>
+          <div style="display: flex; justify-content: space-around;">
+            <div>
+              <h3>Missing in File 2</h3>
+              <pre>${missingInFile2.join("\n") || "None"}</pre>
+            </div>
+            <div>
+              <h3>Missing in File 1</h3>
+              <pre>${missingInFile1.join("\n") || "None"}</pre>
+            </div>
+          </div>
 
-          <h3>Missing in File 2:</h3>
-          <pre>${missingInFile2.join("\n") || "None"}</pre>
-
-          <h3>Missing in File 1:</h3>
-          <pre>${missingInFile1.join("\n") || "None"}</pre>
-
-          <button id="downloadBtn" style="margin-top:20px;padding:10px 20px;">Download Result</button>
-
-          <script>
-            document.getElementById("downloadBtn").addEventListener("click", function() {
-              const text = "Missing in File 2:\\n${missingInFile2.join(
-                "\\n"
-              )}\\n\\nMissing in File 1:\\n${missingInFile1.join("\\n")}";
-              const blob = new Blob([text], { type: "text/plain" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "comparison_result.txt";
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            });
-          </script>
+          <button style="margin-top:20px;
+          padding:10px 20px;">Download</button>
         </body>
       </html>
     `;
@@ -52,21 +50,23 @@ function App() {
     newWindow.document.close();
   };
 
-  const handleReset = () => {
-    setFile1Content("");
-    setFile2Content("");
-  };
-
   return (
-    <div style={styles.appContainer}>
-      <h1 style={styles.heading}>Text File Comparator</h1>
+    <div style={{ textAlign: "center" }}>
+      <h1 style={{ color: "rgb(12, 26, 228)", fontWeight: "bold" }}>
+        L10NSync
+      </h1>
 
-      <button onClick={handleReset} style={styles.resetButton}>
-        Reset Files
-      </button>
-
-      <FileUpload label="Upload File 1" onFileRead={setFile1Content} />
-      <FileUpload label="Upload File 2" onFileRead={setFile2Content} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "40px",
+          flexWrap: "wrap",
+        }}
+      >
+        <FileUpload label="Upload File 1" onFileRead={setFile1Content} />
+        <FileUpload label="Upload File 2" onFileRead={setFile2Content} />
+      </div>
 
       <CompareButton
         onClick={handleCompare}

@@ -9,7 +9,7 @@ const FileUpload = ({ label, onFileRead }) => {
     if (!file) return;
 
     if (!file.type.startsWith("text/")) {
-      alert("❌ Please upload a valid text (.txt) file.");
+      alert(" Please upload a valid text (.txt) file only.");
       return;
     }
 
@@ -17,6 +17,7 @@ const FileUpload = ({ label, onFileRead }) => {
     reader.onload = (event) => {
       onFileRead(event.target.result);
       setFileName(file.name);
+      alert(`File "${file.name}" uploaded successfully!`);
     };
     reader.readAsText(file);
   };

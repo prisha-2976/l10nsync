@@ -1,86 +1,79 @@
 import React, { useState } from "react";
 import FileUpload from "./FileUpload.js";
 import CompareButton from "./CompareButton.js";
+import { styles } from "./styles.js";
 
-const App = () => {
-  const [file1Content, setFile1Content] = useState(null);
-  const [file2Content, setFile2Content] = useState(null);
+function App() {
+  const [file1Content, setFile1Content] = useState("");
+  const [file2Content, setFile2Content] = useState("");
 
   const handleCompare = () => {
-    if (!file1Content || !file2Content) {
-      alert("Please upload both files to compare them.");
-      return;
-    }
+    const lines1 = file1Content.split("\n");
+    const lines2 = file2Content.split("\n");
 
-    try {
-      const json1 = JSON.parse(file1Content);
-      const json2 = JSON.parse(file2Content);
+    const missingInFile2 = lines1.filter((line) => !lines2.includes(line));
+    const missingInFile1 = lines2.filter((line) => !lines1.includes(line));
 
-      const keys1 = Object.keys(json1);
-      const keys2 = Object.keys(json2);
+    const resultHTML = `
+      <html>
+        <head><title>Comparison Result</title></head>
+        <body style="font-family:sans-serif; padding:20px;">
+          <h1>Comparison Result</h1>
 
-      // if keys missing in file2
-      const missingInFile2 = keys1.filter((key) => !keys2.includes(key));
+          <h3>Missing in File 2:</h3>
+          <pre>${missingInFile2.join("\n") || "None"}</pre>
 
-      // if kmeys missing in file1
-      const missingInFile1 = keys2.filter((key) => !keys1.includes(key));
+          <h3>Missing in File 1:</h3>
+          <pre>${missingInFile1.join("\n") || "None"}</pre>
 
-      let message = "";
+          <button id="downloadBtn" style="margin-top:20px;padding:10px 20px;">Download Result</button>
 
-      if (missingInFile2.length === 0 && missingInFile1.length === 0) {
-        message = " No keys is missing in both files.";
-      } else {
-        if (missingInFile2.length > 0) {
-          message += `Keys missing in File 2:\n${missingInFile2.join(
-            "\n"
-          )}\n\n`;
-        }
-        if (missingInFile1.length > 0) {
-          message += `Keys missing in File 1:\n${missingInFile1.join("\n ")}`;
-        }
-      }
+          <script>
+            document.getElementById("downloadBtn").addEventListener("click", function() {
+              const text = "Missing in File 2:\\n${missingInFile2.join(
+                "\\n"
+              )}\\n\\nMissing in File 1:\\n${missingInFile1.join("\\n")}";
+              const blob = new Blob([text], { type: "text/plain" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "comparison_result.txt";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            });
+          </script>
+        </body>
+      </html>
+    `;
 
-      alert(message);
-    } catch (error) {
-      console.error("Invalid file uploaded:", error);
-      alert("Please upload valid JSON files.");
-    }
+    const newWindow = window.open();
+    newWindow.document.write(resultHTML);
+    newWindow.document.close();
   };
 
-  const containerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "20px",
-  };
-
-  const filesRowStyle = {
-    display: "flex",
-    justifyContent: "center",
-    gap: "40px",
-    marginBottom: "30px",
-    flexWrap: "wrap",
-  };
-
-  const headingStyle = {
-    fontSize: "28px",
-    fontWeight: "bold",
-    marginBottom: "30px",
-    color: "rgb(12, 26, 228)",
+  const handleReset = () => {
+    setFile1Content("");
+    setFile2Content("");
   };
 
   return (
-    <div style={containerStyle}>
-      <h1 style={headingStyle}>L10NSync</h1>
+    <div style={styles.appContainer}>
+      <h1 style={styles.heading}>Text File Comparator</h1>
 
-      <div style={filesRowStyle}>
-        <FileUpload label="Upload File1" onFileRead={setFile1Content} />
-        <FileUpload label="Upload File2" onFileRead={setFile2Content} />
-      </div>
+      <button onClick={handleReset} style={styles.resetButton}>
+        Reset Files
+      </button>
 
-      <CompareButton onClick={handleCompare} />
+      <FileUpload label="Upload File 1" onFileRead={setFile1Content} />
+      <FileUpload label="Upload File 2" onFileRead={setFile2Content} />
+
+      <CompareButton
+        onClick={handleCompare}
+        disabled={!file1Content || !file2Content}
+      />
     </div>
   );
-};
+}
 
 export default App;

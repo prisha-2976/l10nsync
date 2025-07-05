@@ -1,9 +1,11 @@
-import React from "react";
-import { styles } from "../styles.js";
+import React, { useState } from "react";
+import { useDropzone } from "react-dropzone";
 
 const FileUpload = ({ label, onFileRead }) => {
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
+  const [fileName, setFileName] = useState("");
+
+  const onDrop = (acceptedFiles) => {
+    const file = acceptedFiles[0];
     if (!file) return;
 
     if (!file.type.startsWith("text/")) {
@@ -12,15 +14,58 @@ const FileUpload = ({ label, onFileRead }) => {
     }
 
     const reader = new FileReader();
-    reader.onload = (ev) => onFileRead(ev.target.result);
+    reader.onload = (event) => {
+      onFileRead(event.target.result);
+      setFileName(file.name);
+    };
     reader.readAsText(file);
   };
 
+  const handleReset = () => {
+    onFileRead("");
+    setFileName("");
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  const containerStyle = {
+    border: "2px dashed rgb(210, 11, 41)",
+    padding: "20px",
+    textAlign: "center",
+    cursor: "pointer",
+    margin: "20px",
+    minHeight: "150px",
+    borderColor: isDragActive ? "rgb(238, 171, 15)" : "#ccc",
+    borderRadius: "8px",
+    backgroundColor: "#fafafa",
+    transition: "border 0.3s ease",
+    width: "250px",
+  };
+
+  const resetButtonStyle = {
+    marginTop: "10px",
+    padding: "5px 10px",
+    backgroundColor: "red",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  };
+
   return (
-    <div style={styles.inputContainer}>
-      <label>
-        {label}: <input type="file" accept=".txt" onChange={handleUpload} />
-      </label>
+    <div style={{ textAlign: "center" }}>
+      <div {...getRootProps()} style={containerStyle}>
+        <input {...getInputProps()} />
+        <p>
+          <b>{label}</b>
+        </p>
+        <p>Drag & drop or click to upload</p>
+        {fileName && <p>Uploaded: {fileName}</p>}
+      </div>
+
+      <button onClick={handleReset} style={resetButtonStyle}>
+        Reset
+      </button>
     </div>
   );
 };

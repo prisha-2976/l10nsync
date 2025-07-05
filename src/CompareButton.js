@@ -1,34 +1,14 @@
 import React from "react";
+import { styles } from "../styles";
 
-const CompareButton = ({ onClick }) => {
-  const buttonStyle = {
-    backgroundColor: "#c30ae9", // purple-pink tone
-    color: "white",
-    border: "none",
-    padding: "12px 30px",
-    borderRadius: "8px",
-    fontSize: "16px",
-    cursor: "pointer",
-  transition: "background-color 0.3s ease, transform 0.2s ease",
-  };
-
-  const hoverStyle = {
-    backgroundColor: "#9b07b6",
-    transform: "scale(1.05)",
-  };
-
-  const [isHovered, setIsHovered] = React.useState(false);
-
-  return (
-    <button
-      style={isHovered ? { ...buttonStyle, ...hoverStyle } : buttonStyle}
-      onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      Compare
-    </button>
-  );
-};
+const CompareButton = ({ onClick, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    style={styles.compareButton(!disabled)}
+  >
+    Compare Files
+  </button>
+);
 
 export default CompareButton;
